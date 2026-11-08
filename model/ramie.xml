@@ -1,0 +1,110 @@
+<mujoco model="ramie">
+    <compiler angle="radian" coordinate="local" autolimits="true"/>
+    <option timestep="0.0005" gravity="0 0 -9.81" integrator="implicitfast"/>
+    <default>
+        <!-- convert the Fusion 360 coordinate system to MuJoCo -->
+        <geom type="mesh" xyaxes="1 0 0 0 0 1"/>
+    </default>
+    <asset>
+        <!-- Fusion outputs meshes with mm units by default, but must be converted to m in MuJoCo, hence the scaling -->
+        <mesh name="podstawa" file="podstawa.stl" scale="0.001 0.001 0.001"/>
+        <mesh name="cylinder" file="cylinder.stl" scale="0.001 0.001 0.001"/>
+        <mesh name="ramie" file="ramie.stl" scale="0.001 0.001 0.001"/>
+	<mesh name="silownik" file="silownik.stl" scale="0.001 0.001 0.001"/>
+	<mesh name="srodek" file="srodek.stl" scale="0.001 0.001 0.001"/>
+	<mesh name="ramie2" file="ramie2.stl" scale="0.001 0.001 0.001"/>
+	<mesh name="nadgarstek" file="nadgarstek.stl" scale="0.001 0.001 0.001"/>
+	<mesh name="chwytak" file="chwytak.stl" scale="0.001 0.001 0.001"/>
+	<mesh name="palec1" file="palec1.stl" scale="0.001 0.001 0.001"/>
+	<mesh name="palec2" file="palec2.stl" scale="0.001 0.001 0.001"/>
+	<mesh name="palec3" file="palec3.stl" scale="0.001 0.001 0.001"/>
+    </asset>
+    <worldbody>
+        <light pos="0.1 0.515 2" dir="0 0 -1"/>
+        <geom name="floor" type="plane" size="2 2 0.1" rgba="0.88 0.9 0.92 1" euler="0 0 90"/>
+        <body name="platforma" pos="0.1 0.515 0.015">
+        <geom type="box" size="0.44 0.66 0.015" rgba="0.3 0.3 0.3 1" condim="3" euler="0 0 54.98"/>
+        </body>
+        <body name="kostka_czerwona" pos="0.5 0.515 0.055">
+        <joint type="free"/>
+        <geom type="box" size="0.02 0.02 0.02" rgba="1 0 0 1" mass="0.05" condim="4" friction="2.5 0.01 0.001" solimp="0.99 0.99 0.001" solref="0.01 1"/>
+        </body>
+        <body name="podstawa">
+            <geom mesh="podstawa"/>
+            <body name="cylinder">
+                <joint name="joint_1" pos="0. 0 0.09" axis="0 0 1" limited="true" range="-1.57 1.57" damping="20.0"/>
+                <geom mesh="cylinder"/>
+                <body name="silownik">
+                    <joint name="joint_silPod" pos="0.094 0.115666 0.104" axis="1 0 0" limited="true" range="-0.157 0.157" damping="2.0"/>
+                    <geom mesh="silownik"/>
+                    <body name="srodek">
+                        <joint name="joint_sil" pos="0 0.151505 0.430194" axis="0 0.109 0.994" type="slide" limited="true" range="-0.05 0.22" damping="20.0"/>
+                        <geom mesh="srodek"/>
+                        <site name="rod_tip" pos="0 0.151505 0.430194" size="0.01"/>
+                        </body>
+                    </body>
+                <body name="ramie">
+                    <joint name="joint_2" pos="0.0498 0 0.4864" axis="1 0 0" limited="true" range="-1.57 1.57" damping="20.0"/>
+                    <geom mesh="ramie"/>
+                    <site name="arm_mount" pos="0 0.151505 0.430194" size="0.01"/>
+                    <body name="ramie2">
+                        <joint name="joint_3" pos="0.0498 0.5402 0.4864" axis="1 0 0" limited="true" range="-2.26 2.26" damping="2.0"/>
+                        <geom mesh="ramie2"/>
+                        <body name="nadgarstek">
+                        <joint name="joint_4" pos="0 0.9604 0.4864" axis="0 1 0" limited="true" range="-3.14 3.14" damping="2.0"/>
+                            <geom mesh="nadgarstek"/>
+                            <body name="chwytak">
+                            <joint name="joint_5" pos="0.018897 1.140525 0.486036" axis="1 0 0" limited="true" range="-1.57 1.57" damping="2.0"/>
+                                <geom mesh="chwytak"/>
+                                <body name="palec1">
+                                    <joint name="joint_p1" pos="-0.019392 1.213275 0.49101" axis="0 0 1" limited="true" range="0.01 1.43"/>
+                                    <geom mesh="palec1" condim="4" friction="2.5 0.01 0.001" solimp="0.99 0.99 0.001" solref="0.01 1"/>
+                                </body>
+                                <body name="palec2">
+                                    <joint name="joint_p2" pos="0.005647 1.213275 0.466954" axis="-0.866025 0 -0.5" limited="true" range="0.01 1.43"/>
+                                    <geom mesh="palec2" condim="4" friction="2.5 0.01 0.001" solimp="0.99 0.99 0.001" solref="0.01 1"/>
+                                </body>
+                                <body name="palec3">
+                                    <joint name="joint_p3" pos="0.013961 1.213275 0.500666" axis="0.866025 0 -0.5" limited="true" range="0.01 1.43"/>
+                                    <geom mesh="palec3" condim="4" friction="2.5 0.01 0.001" solimp="0.99 0.99 0.001" solref="0.01 1"/>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>      
+            </body>
+        </body>
+    </worldbody>
+<equality>
+    <connect
+        site1="rod_tip"
+        site2="arm_mount"
+        solref="0.005 1"
+        solimp="0.99 0.99 0.001"/>
+    <joint name="synchronizacja_palca2" joint1="joint_p1"
+           joint2="joint_p2" polycoef="0 1 0 0 0" solimp="0.999 0.999 0.001" solref="0.001 1"/>
+    <joint name="synchronizacja_palca3" joint1="joint_p1"
+           joint2="joint_p3" polycoef="0 1 0 0 0" solimp="0.999 0.999 0.001" solref="0.001 1"/>
+</equality>
+<contact>
+    <exclude body1="podstawa" body2="cylinder"/>
+    <exclude body1="cylinder" body2="ramie"/>
+    <exclude body1="ramie" body2="ramie2"/>
+    <exclude body1="ramie2" body2="nadgarstek"/>
+    <exclude body1="nadgarstek" body2="chwytak"/>
+    <exclude body1="chwytak" body2="palec1"/>
+    <exclude body1="chwytak" body2="palec2"/>
+    <exclude body1="chwytak" body2="palec3"/>
+    <exclude body1="silownik" body2="srodek"/>
+    <exclude body1="cylinder" body2="silownik"/>
+    <exclude body1="srodek" body2="ramie"/>
+</contact>
+<actuator>
+    <position name="podstawa" joint="joint_1" kp="100" ctrlrange="-1.57 1.57" ctrllimited="true"/>
+    <position name="silownik" joint="joint_sil" kp="3000" ctrlrange="0 0.25" ctrllimited="true"/>
+    <position name="ramie2" joint="joint_3" kp="1000" kv="10" ctrlrange="-2.26 2.26" ctrllimited="true"/>
+    <position name="nadgarstek" joint="joint_4" kp="100" ctrlrange="-3.14 3.14" ctrllimited="true"/>
+    <position name="chwytak" joint="joint_5" kp="100" ctrlrange="-1.57 1.57" ctrllimited="true"/>
+    <position name="palce" joint="joint_p1" kp="100" kv="10" forcerange="-500 500" ctrlrange="0.01 1.43" ctrllimited="true"/>
+</actuator>
+</mujoco>
