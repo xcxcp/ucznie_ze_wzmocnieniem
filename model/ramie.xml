@@ -51,21 +51,21 @@
                         <joint name="joint_3" pos="0.0498 0.5402 0.4864" axis="1 0 0" limited="true" range="-2.26 2.26" damping="2.0"/>
                         <geom mesh="ramie2"/>
                         <body name="nadgarstek">
-                        <joint name="joint_4" pos="0 0.9604 0.4864" axis="0 1 0" limited="true" range="-3.14 3.14" damping="2.0"/>
+                        <joint name="joint_4" pos="0 0.7904 0.4864" axis="0 1 0" limited="true" range="-3.14 3.14" damping="2.0"/>
                             <geom mesh="nadgarstek"/>
                             <body name="chwytak">
-                            <joint name="joint_5" pos="0.018897 1.140525 0.486036" axis="1 0 0" limited="true" range="-1.57 1.57" damping="2.0"/>
+                            <joint name="joint_5" pos="0.018897 0.970525 0.486036" axis="1 0 0" limited="true" range="-1.57 1.57" damping="2.0"/>
                                 <geom mesh="chwytak"/>
                                 <body name="palec1">
-                                    <joint name="joint_p1" pos="-0.019392 1.213275 0.49101" axis="0 0 1" limited="true" range="0.01 1.43"/>
+                                    <joint name="joint_p1" pos="-0.019392 1.043275 0.49101" axis="0 0 1" limited="true" range="0.01 1.43"/>
                                     <geom mesh="palec1" condim="4" friction="2.5 0.01 0.001" solimp="0.99 0.99 0.001" solref="0.01 1"/>
                                 </body>
                                 <body name="palec2">
-                                    <joint name="joint_p2" pos="0.005647 1.213275 0.466954" axis="-0.866025 0 -0.5" limited="true" range="0.01 1.43"/>
+                                    <joint name="joint_p2" pos="0.005647 1.043275 0.466954" axis="-0.866025 0 -0.5" limited="true" range="0.01 1.43"/>
                                     <geom mesh="palec2" condim="4" friction="2.5 0.01 0.001" solimp="0.99 0.99 0.001" solref="0.01 1"/>
                                 </body>
                                 <body name="palec3">
-                                    <joint name="joint_p3" pos="0.013961 1.213275 0.500666" axis="0.866025 0 -0.5" limited="true" range="0.01 1.43"/>
+                                    <joint name="joint_p3" pos="0.013961 1.043275 0.500666" axis="0.866025 0 -0.5" limited="true" range="0.01 1.43"/>
                                     <geom mesh="palec3" condim="4" friction="2.5 0.01 0.001" solimp="0.99 0.99 0.001" solref="0.01 1"/>
                                 </body>
                             </body>

@@ -17,10 +17,10 @@
 \toprule
 Element & Informacja \\
 \midrule
-Imię i nazwisko & Do uzupełnienia \\
-Numer albumu & Do uzupełnienia \\
-Kierunek/specjalność & Do uzupełnienia \\
-Tytuł projektu & Do uzupełnienia \\
+Imię i nazwisko & Patryk Przybyło \\
+Numer albumu & 179597 \\
+Kierunek/specjalność & EF-DI/AI \\
+Tytuł projektu & Symulacja ramienia sortującego \\
 Link do repozytorium & \url{https://github.com/...} \\
 Data oddania & Do uzupełnienia \\
 \bottomrule
@@ -31,87 +31,156 @@ Data oddania & Do uzupełnienia \\
 
 \subsection{Opis problemu}
 
-Należy krótko opisać problem rozwiązywany w~projekcie. 
-Opis powinien być zrozumiały bez czytania kodu źródłowego.
+Problemem jest sterowanie manipulatorem o wielu stopniach swobody w środowisku symulacyjnym silnika fizycznego.
+Robot jest odzwzorowany na podstawie rzeczywistego ramienia a nauczona przez agenta strategia w symulacji ma być przeniesiona na rzeczywiste sterowanie.
 
 \subsection{Cel agenta}
 
-Należy wyjaśnić, co agent ma osiągnąć oraz kiedy jego działanie można uznać za poprawne lub skuteczne.
+Na podstawie pozycji obiektu agent ma tak ustawić ramię, aby chwytak znajdował się nad obiektem w taki sposób, aby możliwe było chwycenie obiektu.
+Przy czym ma on unikać zderzeń z innymi obiektami i podłożem oraz nie wykonywać ruchów naruszających fizyczne ograniczenia manipulatora.
 
 \subsection{Uzasadnienie zastosowania uczenia się ze wzmocnieniem}
 
-Należy wyjaśnić, dlaczego problem można rozpatrywać jako problem uczenia się ze wzmocnieniem. W szczególności należy wskazać:
-\begin{itemize}
-    \item jakie decyzje są podejmowane sekwencyjnie,
-    \item w jaki sposób decyzje wpływają na przyszły stan środowiska,
-    \item dlaczego istotny jest wynik długoterminowy, a nie tylko natychmiastowa nagroda,
-    \item dlaczego zastosowanie agenta uczącego się jest uzasadnione.
-\end{itemize}
+Sterowania ramieniem robota  można rozpatrywać jako problem uczenia się ze wzmocnieniem, ponieważ robot podejmuje serię powiązanych ze sobą decyzji, które wpływają na jego dalsze działanie oraz na stan otoczenia. 
+W trakcie realizacji zadania robot musi kolejno podejmować decyzje dotyczące między innymi kierunku i zakresu ruchu poszczególnych przegubów, położenia ramienia oraz wysunięcia siłownika liniowego.
+Decyzje te tworzą sekwencję prowadzącą od początkowego położenia robota do wykonania zadania.
+Każde działanie agenta zmienia stan środowiska. Przykładowo obrót podstawy, zmiana kąta ramienia lub wysunięcie siłownika wpływają na aktualne położenie chwytaka.
+W sterowaniu robotem istotne jest osiągnięcie końcowego celu, a nie tylko uzyskanie korzyści z pojedynczego ruchu. Przykładowo szybkie zbliżenie chwytaka do obiektu nie oznacza jeszcze sukcesu, jeżeli chwytak nie będzie ustawiony w odpowiedniej pozycji.
+Dlatego agent powinien uwzględniać konsekwencje swoich działań w kolejnych etapach zadania.
+Zastosowanie agenta uczącego się jest uzasadnione ze względu na złożoność sterowania robotem posiadającym kilka stopni swobody oraz konieczność dostosowywania ruchów do zmiennego położenia.
+Ręczne opracowanie reguł sterowania dla wszystkich możliwych sytuacji może być trudne i mało elastyczne. Agent uczący się ze wzmocnieniem może natomiast zdobywać doświadczenie poprzez wielokrotne wykonywanie prób w środowisku symulacyjnym.
 
 \section{Formalizacja problemu RL/MDP}
 
 \subsection{Agent i środowisko}
 
-Należy opisać agenta, środowisko oraz sposób ich interakcji. Warto wskazać, co dzieje się w jednym kroku epizodu.
+Agentem jest algorytm uczenia się ze wzmocnieniem odpowiedzialny za sterowanie ramieniem robota. 
+Jego zadaniem jest wybieranie kolejnych ruchów prowadzących do znalezienia się chywtaka nad obiektem.
+Środowiskiem jest model robota oraz otoczenia przygotowany w symulatorze MuJoCo. Obejmuje ono:
+\begin{itemize}
+    \item obrotową podstawę robota,
+    \item człony ramienia i jego przeguby,
+    \item siłownik liniowy,
+    \item nadgarstek z niezależnymi osiami obrotu,
+    \item chwytak wyposażony w trzy zsynchronizowane palce,
+    \item sorotowane obiekty,
+    \item plansza.
+\end{itemize}
+Agent i środowisko współpracują w następującej pętli:
+\begin{enumerate}
+    \item Środowisko udostępnia agentowi aktualną obserwację.
+    \item Agent analizuje obserwację i wybiera akcję.
+    \item Akcja jest przekazywana do środowiska symulacyjnego.
+    \item Symulator wykonuje zadany ruch, uwzględniając mechanikę robota i oddziaływania z otoczeniem.
+    \item Środowisko zwraca nową obserwację, wartość nagrody oraz informację, czy epizod został zakończony.
+    \item Agent wykorzystuje otrzymane informacje do aktualizacji swojej strategii podczas treningu.
+\end{enumerate}
 
 \subsection{Stan lub obserwacja}
 
-Należy opisać informacje dostępne dla agenta. Jeżeli agent nie obserwuje pełnego stanu środowiska, należy wyjaśnić różnicę między stanem środowiska a obserwacją agenta.
+Agent ma dostęp do informacji o kątach obrotu podstawy, przegubów ramienia i nadgarstk, wysunięciu siłownika liniowego oraz położeniu obiektów.
+Nie ma natomiast informacji bezpośredniej o położeniu poszczególnych części robota ani gdzie doszło do kolizcji.
 
 \begin{center}
 \begin{tabular}{p{0.30\textwidth}p{0.60\textwidth}}
 \toprule
 Składowa stanu/obserwacji & Znaczenie \\
 \midrule
-Do uzupełnienia & Do uzupełnienia \\
-Do uzupełnienia & Do uzupełnienia \\
-Do uzupełnienia & Do uzupełnienia \\
+$a_b$ & Kąt obrotu ramienia \\
+$a_r$ & Kąt między ramieniem a podstawą \\
+$a_l$ & Wysunięcie siłownika liniowego \\
+$a_e$ & Kąt zgięcia łokcia\\
+$a_n$ & Kąt obrotu nadgarskta wokół własnej osi\\
+$a_c$ & Kąt obrotu chwytaka względem nadgastak\\
+$x_i$, $y_i$, $z_i$ & Połóżenie obiektu\\
 \bottomrule
 \end{tabular}
 \end{center}
 
 \subsection{Akcje}
 
-Należy opisać zbiór akcji dostępnych dla agenta. 
-Jeżeli niektóre akcje są niedozwolone w~określonych stanach, 
-należy to wyjaśnić.
+Zbiór akcji określa, jakie działania agent może wykonywać w środowisku. W projektowanym robocie akcje dotyczą sterowania położeniem poszczególnych osi mechanizmu oraz chwytakiem.
+Przyjęto, że agent będzie sterował wartościami zadanymi dla napędów, a nie bezpośrednio sygnałami elektrycznymi lub PWM. 
+Takie rozwiązanie pozwala oddzielić proces podejmowania decyzji przez agenta od niskopoziomowego sterowania silnikami.
+W proponowanym rozwiązaniu przestrzeń akcji jest ciągła, agent wybiera wartości zadane ruchu w określonych zakresach.
+Wartości akcji przekraczające dopuszczalne zakresy są odrzucane przez warstwę sterowania. 
+Dzięki temu agent nie może wymusić ruchu prowadzącego do mechanicznego uszkodzenia robota.
 
 \begin{center}
 \begin{tabular}{p{0.30\textwidth}p{0.60\textwidth}}
 \toprule
 Akcja & Opis \\
 \midrule
-Do uzupełnienia & Do uzupełnienia \\
-Do uzupełnienia & Do uzupełnienia \\
-Do uzupełnienia & Do uzupełnienia \\
+$a_b$ & Kąt obrotu podstawy \\
+$a_r$ & Kąt obrotu ramienia\\
+$a_e$ & Kąt obortu łokcia \\
+$a_n$ & Kąt obrotu nadgarstka \\
+$a_c$ & Kąt obrotu chwytaka\\
+$a_l$ & Wysunięcie siłownika liniowego\\
 \bottomrule
 \end{tabular}
 \end{center}
 
 \subsection{Funkcja nagrody}
 
-Należy dokładnie opisać funkcję nagrody. Opis powinien zawierać nie tylko wzór lub kod, ale również uzasadnienie przyjętych wartości.
+Funkcja nagrody określa, które zachowania agenta są pożądane. 
+Jej zadaniem jest zachęcanie do poprawnego ustawienia chwytaka, a jednocześnie ograniczanie niepotrzebnych ruchów i niebezpiecznych zachowań.
 
 \begin{equation}
-    r_t = \text{do uzupełnienia}
+    r_t = w_u R_{\text{ustawienie}} + w_p(d_{t-1}-d_t) + w_k P_{\text{kolizcja}} + w_n P_{\text{niedozwolony ruch}} + w_t
 \end{equation}
 
-W tej sekcji należy wyjaśnić:
+Gdzie:
 \begin{itemize}
-    \item za co agent otrzymuje nagrodę dodatnią,
-    \item za co agent otrzymuje karę,
-    \item czy występuje kara za krok,
-    \item czy występują ograniczenia twarde lub miękkie,
-    \item czy nagroda nie zachęca agenta do niepożądanego zachowania.
+    \item $d_t$ - odległość chwytaka od aktualnego celu
+    \item $R_{\text{ustawienie}}$ - nagroda za poprawne ustawienie chywtaka
+    \item $P_{\text{kolizcja}}$ - kara za kolizje
+    \item $P_{\text{niedozwolony ruch}}$ - kara za niedozwolony ruch
+    \item $w_t$ - kara za krok
+    \item $w_u$, $w_p$, $w_k$, $w_n$ - współczynniki określające znaczenie poszczególnych składników
 \end{itemize}
+
+\begin{center}
+\begin{tabular}{p{0.30\textwidth}p{0.60\textwidth}}
+\toprule
+Składnik & Proponowana wartość \\
+\midrule
+$w_u$ & 100\\
+$w_p$ & 1 \\
+$w_k$ & -50 \\
+$w_n$ & -50\\
+$w_t$ & -0.01\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Nagroda za poprawne ustawienie jest największa, ponieważ stanowi główny cel zadania.
+Kara za kolizję i niedozwolony ruch ma ograniczać zachowania niebezpieczne.
+Ważne jest, aby funkcja nagrody nie zachęcała agenta do osiągania krótkoterminowych korzyści kosztem całego zadania. 
+Przykładowo samo zbliżenie chwytaka do obiektu nie może być traktowane jako sukces.
+
 
 \subsection{Warunki zakończenia epizodu}
 
-Należy wskazać wszystkie sytuacje, w których epizod zostaje zakończony, np. osiągnięcie celu, kolizja, wyczerpanie energii, przekroczenie limitu kroków albo wejście w stan porażki.
+Epizod oznacza pojedynczą próbę wykonania zadania. Rozpoczyna się od ustawienia robota i obiektu w określonych pozycjach początkowych, a kończy po wystąpieniu jednego z określonych zdarzeń.
+Epizod zostaje zakończony w następujących sytuacjach:
+\begin{itemize}
+    \item Sukces: agent poprawnie umieścił chwytak nad obiektem
+    \item Przekroczenie limitu kroków: agent nie wykonał zadania w określonej liczbie kroków.
+\end{itemize}
 
 \subsection{Założenia i ograniczenia środowiska}
 
-Należy opisać uproszczenia przyjęte w projekcie, ograniczenia modelu środowiska oraz elementy, które nie zostały uwzględnione.
+Na potrzeby projektu przyjęto uproszczony model środowiska, który umożliwia przeprowadzenie treningu agenta w symulatorze MuJoCo.
+Najważniejsze założenia i uproszczenia:
+\begin{itemize}
+    \item Rrobot jest odwzorowany w MuJoCo jako układ sztywnych elementów połączonych przegubami obrotowymi i przesuwnymi.
+    \item Serwomechanizmy są traktowane jako napędy realizujące zadane pozycje. Nie odwzorowuje się w pełni wszystkich zjawisk występujących w rzeczywistych serwach, takich jak luzy przekładni, opóźnienia komunikacji czy zmiany momentu w zależności od warunków pracy.
+    \item Agent dostaje dokładne pozycje obiektów, gdzie w rzeczywistym robocie pozycje są wyznaczane z kamer
+    \item Model symulacyjny nie odwzorowuje idealnie rzeczywistej konstrukcji. Mogą występować różnice w masie, bezwładności, tarciu, sztywności elementów
+\end{itemize}
+
+Przyjęte uproszczenia pozwalają jednak rozpocząć trening w kontrolowanym środowisku, stopniowo zwiększać jego złożoność i przygotować algorytm do późniejszego wykorzystania w rzeczywistym systemie sortowania.
 
 \section{Implementacja}
 
